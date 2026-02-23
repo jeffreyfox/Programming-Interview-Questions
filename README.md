@@ -1,3 +1,3 @@
-# LeetCode
+# Programming Interview Questions
 
-This repository contains C++/Java/MySQL codes for my solutions for LeetCode problems.
+This repository contains my solutions for Programming Interview Questions
