@@ -227,3 +227,264 @@ if __name__ == "__main__":
     test2()
     test3()
     test4()
+
+# Follow-up:
+# In this follow-up, the monster battle simulator is enhanced so that each monster now has types and weaknesses. These additional attributes introduce damage multipliers that can significantly influence how battles unfold.
+
+# class Monster { 
+#     String name;
+#     int health;
+#     int attack;
+
+#     String type; // The monster's elemental category (e.g., "Fire", "Water").
+#     List<String> weakness; // A list of types this monster is vulnerable to.
+#     ...
+# }
+# Implement the method simulateBattle(teamA, teamB) that executes the battle simulation and returns a list of event strings based on the updated rules described below:
+
+# New Damage Rule
+
+# When an attacker hits a defender, the final damage depends on the interaction between their types:
+
+# If the defender's weakness list includes the attacker's type, the damage is doubled.
+# If the attacker's weakness list includes the defender's type, the damage is halved (floor division toward 0).
+# Otherwise, the damage remains unchanged.
+# All adjusted damage values must be correctly reflected in the "[ATTACK]" event logs.
+
+# Constraints:
+
+# Team size is less than 104
+# 1 ≤ health, attack ≤ 109
+# type and weakness strings are non-empty and consist of alphanumeric characters.
+# Example:
+
+# Input:
+# ["Monster", "Monster", "Team", "Team", "simulateBattle"]
+# [["FireMon", 20, 10, "Fire", ["Water"]], ["GrassMon", 15, 5, "Grass", ["Fire"]], ["A", monster1], ["B", monster2], [teamA, teamB]]
+
+# Output:
+# [
+#   "[ATTACK] A:FireMon -> B:GrassMon | DMG=20 | HP:15 -> 0",
+#   "[DEATH] B:GrassMon defeated | NEXT=NONE",
+#   "[RESULT] WINNER=A"
+# ]
+
+class Monster:
+    def __init__(self, name, health, attack, type, weakness):
+        self.name = name
+        self.health = health
+        self.attack = attack
+        self.type = type
+        self.weakness = weakness
+
+class Team:
+    def __init__(self, label, monsters):
+        self.label = label
+        self.monsters = monsters
+        self.activeIdx = 0
+
+    def getActive(self):
+        if self.activeIdx < len(self.monsters):
+            return self.monsters[self.activeIdx]
+        return None
+
+    def advanceAndNextLabel(self):
+        self.activeIdx = self.activeIdx + 1
+        if self.activeIdx < len(self.monsters):
+            return self.label + ":" + self.monsters[self.activeIdx].name
+        return "NONE"
+
+    def hasAlive(self):
+        return self.activeIdx < len(self.monsters)
+
+class Solution:
+    def damage(self, attacker: Monster, defender: Monster) -> int:
+        dmg = attacker.attack
+        if attacker.type in defender.weakness:
+            dmg = dmg * 2
+        if defender.type in attacker.weakness:
+            dmg = dmg // 2 # floor division
+        return dmg
+
+    def simulateBattle(self, teamA, teamB):
+        result = []
+        while teamA.hasAlive() and teamB.hasAlive():
+            monsterA = teamA.getActive()
+            monsterB = teamB.getActive()
+            # A attacks B
+            dmg = self.damage(monsterA, monsterB)
+            hpB = monsterB.health
+            hpBNew = max(0, hpB - dmg)
+            monsterB.health = hpBNew
+            msg = (
+                f"[ATTACK] A:{monsterA.name} -> B:{monsterB.name} | "
+                f"DMG={dmg} | HP:{hpB} -> {hpBNew}"
+            )
+            result.append(msg)
+            if hpBNew == 0:
+                newLabel = teamB.advanceAndNextLabel()
+                result.append(f"[DEATH] B:{monsterB.name} defeated | NEXT={newLabel}")
+                continue
+
+            # now B attacks A
+            monsterB = teamB.getActive()
+            dmg = self.damage(monsterB, monsterA)
+            hpA = monsterA.health
+            hpANew = max(0, hpA - dmg)
+            monsterA.health = hpANew
+            msg = (
+                f"[ATTACK] B:{monsterB.name} -> A:{monsterA.name} | "
+                f"DMG={dmg} | HP:{hpA} -> {hpANew}"                
+            )
+            result.append(msg)
+            if hpANew == 0:
+                newLabel = teamA.advanceAndNextLabel()
+                result.append(f"[DEATH] A:{monsterA.name} defeated | NEXT={newLabel}")
+
+        if teamA.hasAlive():
+            result.append("[RESULT] WINNER=A")
+        else:
+            result.append("[RESULT] WINNER=B")
+        return result
+
+def test1():
+    print("===== Test 1 =====")
+
+    solution = Solution()
+    monster1 = Monster("FireMon", 20, 10, "Fire", ["Water"])
+    monster2 = Monster("GrassMon", 15, 5, "Grass", ["Fire"])
+    teamA = Team("A", [monster1])
+    teamB = Team("B", [monster2])
+
+    log = solution.simulateBattle(teamA, teamB)
+    print(log)
+    expected = [
+      "[ATTACK] A:FireMon -> B:GrassMon | DMG=20 | HP:15 -> 0",
+      "[DEATH] B:GrassMon defeated | NEXT=NONE",
+      "[RESULT] WINNER=A"
+    ]
+    assert log == expected
+
+def test2():
+    print("===== Test 2 =====")
+
+    solution = Solution()
+    monster1 = Monster("FireMon", 8, 9, "Fire", ["Water"])
+    monster2 = Monster("WaterMon", 10, 6, "Water", [])
+    teamA = Team("A", [monster1])
+    teamB = Team("B", [monster2])
+
+    log = solution.simulateBattle(teamA, teamB)
+    print(log)
+    expected = [
+      "[ATTACK] A:FireMon -> B:WaterMon | DMG=4 | HP:10 -> 6",
+      "[ATTACK] B:WaterMon -> A:FireMon | DMG=12 | HP:8 -> 0",
+      "[DEATH] A:FireMon defeated | NEXT=NONE",
+      "[RESULT] WINNER=B"
+    ]
+    assert log == expected
+
+def test3():
+    print("===== Test 3 =====")
+
+    solution = Solution()
+    monster1 = Monster("NormalA", 10, 5, "Normal", ["Fire"])
+    monster2 = Monster("NormalB", 12, 3, "Normal", ["Water"])
+    teamA = Team("A", [monster1])
+    teamB = Team("B", [monster2])
+
+    log = solution.simulateBattle(teamA, teamB)
+    print(log)
+    expected = [
+      "[ATTACK] A:NormalA -> B:NormalB | DMG=5 | HP:12 -> 7",
+      "[ATTACK] B:NormalB -> A:NormalA | DMG=3 | HP:10 -> 7",
+      "[ATTACK] A:NormalA -> B:NormalB | DMG=5 | HP:7 -> 2",
+      "[ATTACK] B:NormalB -> A:NormalA | DMG=3 | HP:7 -> 4",
+      "[ATTACK] A:NormalA -> B:NormalB | DMG=5 | HP:2 -> 0",
+      "[DEATH] B:NormalB defeated | NEXT=NONE",
+      "[RESULT] WINNER=A"
+    ]
+    assert log == expected
+
+def test4():
+    print("===== Test 4 =====")
+
+    solution = Solution()
+    monster1 = Monster("Archer", 12, 6, "Grass", ["Fire"])
+    monster2 = Monster("Mage", 20, 4, "Water", ["Grass"])
+    monster3 = Monster("FireSprite", 10, 4, "Fire", ["Water"])
+    monster4 = Monster("StoneGolem", 18, 5, "Normal", [])
+    teamA = Team("A", [monster1, monster2])
+    teamB = Team("B", [monster3, monster4])
+
+    log = solution.simulateBattle(teamA, teamB)
+    print(log)
+    expected = [
+      "[ATTACK] A:Archer -> B:FireSprite | DMG=3 | HP:10 -> 7",
+      "[ATTACK] B:FireSprite -> A:Archer | DMG=8 | HP:12 -> 4",
+      "[ATTACK] A:Archer -> B:FireSprite | DMG=3 | HP:7 -> 4",
+      "[ATTACK] B:FireSprite -> A:Archer | DMG=8 | HP:4 -> 0",
+      "[DEATH] A:Archer defeated | NEXT=A:Mage",
+      "[ATTACK] A:Mage -> B:FireSprite | DMG=8 | HP:4 -> 0",
+      "[DEATH] B:FireSprite defeated | NEXT=B:StoneGolem",
+      "[ATTACK] A:Mage -> B:StoneGolem | DMG=4 | HP:18 -> 14",
+      "[ATTACK] B:StoneGolem -> A:Mage | DMG=5 | HP:20 -> 15",
+      "[ATTACK] A:Mage -> B:StoneGolem | DMG=4 | HP:14 -> 10",
+      "[ATTACK] B:StoneGolem -> A:Mage | DMG=5 | HP:15 -> 10",
+      "[ATTACK] A:Mage -> B:StoneGolem | DMG=4 | HP:10 -> 6",
+      "[ATTACK] B:StoneGolem -> A:Mage | DMG=5 | HP:10 -> 5",
+      "[ATTACK] A:Mage -> B:StoneGolem | DMG=4 | HP:6 -> 2",
+      "[ATTACK] B:StoneGolem -> A:Mage | DMG=5 | HP:5 -> 0",
+      "[DEATH] A:Mage defeated | NEXT=NONE",
+      "[RESULT] WINNER=B"
+    ]
+    assert log == expected
+
+def test5():
+    print("===== Test 5 =====")
+
+    solution = Solution()
+    monster1 = Monster("Blaze", 14, 7, "Fire", ["Water"])
+    monster2 = Monster("Aqua", 10, 5, "Water", ["Electric"])
+    monster3 = Monster("Leaf", 12, 6, "Grass", ["Fire"])
+    monster4 = Monster("Sprout", 13, 4, "Grass", ["Fire"])
+    monster5 = Monster("Spark", 9, 7, "Electric", ["Grass"])
+    monster6 = Monster("Wave", 16, 3, "Water", ["Electric"])
+    monster7 = Monster("Rock", 18, 15, "Normal", ["Water"])
+    teamA = Team("A", [monster1, monster2, monster3])
+    teamB = Team("B", [monster4, monster5, monster6, monster7])
+
+    log = solution.simulateBattle(teamA, teamB)
+    print(log)
+    expected = [
+      "[ATTACK] A:Blaze -> B:Sprout | DMG=14 | HP:13 -> 0",
+      "[DEATH] B:Sprout defeated | NEXT=B:Spark",
+      "[ATTACK] A:Blaze -> B:Spark | DMG=7 | HP:9 -> 2",
+      "[ATTACK] B:Spark -> A:Blaze | DMG=7 | HP:14 -> 7",
+      "[ATTACK] A:Blaze -> B:Spark | DMG=7 | HP:2 -> 0",
+      "[DEATH] B:Spark defeated | NEXT=B:Wave",
+      "[ATTACK] A:Blaze -> B:Wave | DMG=3 | HP:16 -> 13",
+      "[ATTACK] B:Wave -> A:Blaze | DMG=6 | HP:7 -> 1",
+      "[ATTACK] A:Blaze -> B:Wave | DMG=3 | HP:13 -> 10",
+      "[ATTACK] B:Wave -> A:Blaze | DMG=6 | HP:1 -> 0",
+      "[DEATH] A:Blaze defeated | NEXT=A:Aqua",
+      "[ATTACK] A:Aqua -> B:Wave | DMG=5 | HP:10 -> 5",
+      "[ATTACK] B:Wave -> A:Aqua | DMG=3 | HP:10 -> 7",
+      "[ATTACK] A:Aqua -> B:Wave | DMG=5 | HP:5 -> 0",
+      "[DEATH] B:Wave defeated | NEXT=B:Rock",
+      "[ATTACK] A:Aqua -> B:Rock | DMG=10 | HP:18 -> 8",
+      "[ATTACK] B:Rock -> A:Aqua | DMG=7 | HP:7 -> 0",
+      "[DEATH] A:Aqua defeated | NEXT=A:Leaf",
+      "[ATTACK] A:Leaf -> B:Rock | DMG=6 | HP:8 -> 2",
+      "[ATTACK] B:Rock -> A:Leaf | DMG=15 | HP:12 -> 0",
+      "[DEATH] A:Leaf defeated | NEXT=NONE",
+      "[RESULT] WINNER=B"
+    ]
+    assert log == expected
+
+if __name__ == "__main__":
+    test1()
+    test2()
+    test3()
+    test4()
+    test5()
