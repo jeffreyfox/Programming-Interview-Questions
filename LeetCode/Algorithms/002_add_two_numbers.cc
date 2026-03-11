@@ -17,7 +17,7 @@ Output: 7 -> 0 -> 8
 // Use dummy head. Add additional node if final carry = 1.
 // Caveats:
 // 1. Don't forget to move l1 and l2 forward!
-// 2. Last step, scheck if carry > 0, not carry > 1 !
+// 2. Last step, check if carry > 0, not carry > 1 !
 
 class Solution {
 public:
