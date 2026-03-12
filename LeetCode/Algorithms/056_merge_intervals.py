@@ -25,6 +25,24 @@
 # intervals[i].length == 2
 # 0 <= starti <= endi <= 104
 
+# A simpler solution using the fact that the intervals are already sorted by start time.
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        if len(intervals) < 2:
+            return intervals
+        intervals.sort()
+        
+        result = [intervals[0]]
+        for curr in intervals[1:]:
+            last = result[-1]
+            if last[1] >= curr[0]:
+                result[-1] = [last[0], max(last[1], curr[1])]
+            else:
+                result.append(curr)
+            
+        return result
+
+
 # Sort the intervals by the starting time. Then merge the intervals if they are overlapping.
 # We can further simplify the is_overlap and get_merged functions because the list is already sorted.
 class Solution:
