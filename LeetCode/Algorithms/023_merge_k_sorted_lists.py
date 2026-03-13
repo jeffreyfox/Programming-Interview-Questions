@@ -67,3 +67,33 @@ class Solution:
                 heapq.heappush(heap, (node.next.val, idx, node.next))
             
         return dummy.next
+
+# Equivalent solution using thread-safe PriorityQueue (slower)
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+
+from queue import PriorityQueue
+class Solution:
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        pq = PriorityQueue()
+
+        for idx, head in enumerate(lists):
+            if head is None:
+                continue
+            pq.put((head.val, idx, head))
+
+        dummy = ListNode(-1)
+        curr = dummy
+        while not pq.empty():
+            _, idx, node = pq.get()
+
+            curr.next = node
+            curr = curr.next
+            
+            if node.next:
+                pq.put((node.next.val, idx, node.next))
+            
+        return dummy.next
