@@ -58,3 +58,44 @@ class Solution:
                     dfs(i, j)
         
         return count
+
+# Solution 2 using BFS.
+# Notes that we need to mark the grid as visited at queue insertion time, not at pop time.
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+        if not grid or not grid[0]:
+            return 0
+
+        m, n = len(grid), len(grid[0])
+        count = 0
+
+        def bfs(i, j) -> None:
+            q = deque()
+            q.append((i, j))
+            grid[i][j] = "v"
+
+            while q:
+                ir, jc = q.popleft()
+                
+                if ir > 0 and grid[ir-1][jc] == "1":
+                    q.append((ir-1, jc))
+                    grid[ir-1][jc] = "v"
+                if jc > 0 and grid[ir][jc-1] == "1":
+                    q.append((ir, jc-1))
+                    grid[ir][jc-1] = "v"
+                if ir < m-1 and grid[ir+1][jc] == "1":
+                    q.append((ir+1, jc))
+                    grid[ir+1][jc] = "v"
+                if jc < n-1 and grid[ir][jc+1] == "1":
+                    q.append((ir, jc+1))
+                    grid[ir][jc+1] = "v"
+
+
+            
+        for i in range(m):
+            for j in range(n):
+                if grid[i][j] == "1":
+                    count += 1
+                    bfs(i, j)
+        
+        return count
