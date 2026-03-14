@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TOTAL=400      # total number of problems
+TOTAL=300      # total number of problems
 GROUP=5        # break every GROUP problems
 ROW=20         # problems per row
 solved=0
