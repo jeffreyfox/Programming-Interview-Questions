@@ -1,3 +1,8 @@
+# TAGS: array,two pointers,sorting,hash table
+
+# Method 1 using a hash table. O(n)
+# We could also use two pointers by sorting the array first.
+
 class Solution:
     def twoSum(self, nums: List[int], target: int) -> List[int]:
         d = {}
