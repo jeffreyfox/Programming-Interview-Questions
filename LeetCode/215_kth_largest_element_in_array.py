@@ -1,3 +1,5 @@
+# TAGS: array,heap
+
 # Solution using heapq (priority queue). Use negative to minic a max queue
 
 class Solution:
