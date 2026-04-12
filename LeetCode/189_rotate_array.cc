@@ -61,7 +61,7 @@ public:
     }
 };
 
-// Solution 3. Improved version of solution 2. Use shift insteaad of swapping, only swap once (similar idea to insertion sort).
+// Solution 3. Improved version of solution 2. Use shift instead of swapping, only swap once (similar idea to insertion sort).
 // Also a simpler gcd algorithm (Euclid).
 // If b == 0, return a,
 // If b != 0, then return gcd(b, a%b). Two cases:
