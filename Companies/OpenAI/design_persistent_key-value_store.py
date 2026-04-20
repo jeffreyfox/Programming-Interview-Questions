@@ -99,9 +99,9 @@ def serialize(data: dict[str, str]) -> bytes:
         key_bytes = key.encode("utf-8")
         val_bytes = val.encode("utf-8")
         buf.extend(len(key_bytes).to_bytes(4, "big"))
-        buf.extend(key.encode("utf-8"))
+        buf.extend(key_bytes)
         buf.extend(len(val_bytes).to_bytes(4, "big"))
-        buf.extend(val.encode("utf-8"))
+        buf.extend(val_bytes)
     return bytes(buf)
 
 # Deserializes a bytes object into a python dict
